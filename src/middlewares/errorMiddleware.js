@@ -3,7 +3,7 @@
 // Lưu ý: Middleware xử lý lỗi BẮT BUỘC phải có 4 tham số (err, req, res, next)
 const errorMiddleware = (err, req, res, next) => {
     // 1. Log lỗi để debug
-    console.error("🔥 [Global Error]:", err);
+    console.error(" [Global Error]:", err);
 
     // 2. Lấy status code (mặc định 500)
     const statusCode = err.statusCode || err.status || 500;
