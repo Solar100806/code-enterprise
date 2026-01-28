@@ -21,6 +21,9 @@ export const login = async ({ email, password }) => {
         { userId: user._id, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
+
+
+
     );
 
     // 4. Xóa password khi trả về client
