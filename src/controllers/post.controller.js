@@ -1,5 +1,5 @@
-import asyncHandler from "../utils/asyncHandler.js";
-import * as PostService from "../services/PostService.js";
+import asyncHandler from "../utils/async-handler.util.js";
+import * as PostService from "../services/post.service.js";
 
 export const getAllPosts = asyncHandler(async (req, res) => {
     const result = await PostService.findAll(req.query);

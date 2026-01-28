@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { getAllPosts, getPostByid, createPost, updatePost, deletePost } from "../controllers/PostController.js";
-import validateRequest from "../middlewares/ValidateRequest.js";
-import postValidation from "../../validation/PostValidation.js";
+import { getAllPosts, getPostByid, createPost, updatePost, deletePost } from "../controllers/post.controller.js";
+import validateRequest from "../middlewares/request.middleware.js";
+import postValidation from "../validation/post.validation.js";
 
 const postRouter = Router();
 postRouter.get("/", getAllPosts);

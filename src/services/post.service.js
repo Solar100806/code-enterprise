@@ -1,4 +1,4 @@
-import Post from "../models/PostModel.js";
+import Post from "../models/post.model.js";
 
 export const findAll = async ({ _limit, _page, _sort, _order }) => {
     // 1. Chuẩn hóa Input

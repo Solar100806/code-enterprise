@@ -1,5 +1,5 @@
-import asyncHandler from "../utils/asyncHandler.js";
-import * as AuthService from "../services/AuthService.js";
+import asyncHandler from "../utils/async-handler.util.js";
+import * as AuthService from "../services/auth.service.js";
 
 // Đăng ký
 export const signup = asyncHandler(async (req, res) => {
