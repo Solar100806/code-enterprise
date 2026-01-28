@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
     versionKey: false
 });
+//haha
 
 /**
  * PRE-SAVE HOOK (ĐÃ SỬA)
