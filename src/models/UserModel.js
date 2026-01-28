@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs"; // Nhớ cài thư viện: npm install bcryptjs
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
         unique: true,
-        trim: true, // Tự động xóa khoảng trắng thừa 2 đầu
+        trim: true,
         minlength: 3
     },
 
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6 // Mật khẩu nên tối thiểu 6 ký tự
+        minlength: 6
     },
 
     role: {
@@ -39,21 +39,18 @@ const userSchema = new mongoose.Schema({
 });
 
 /**
- * PRE-SAVE HOOK
- * Tự động chạy trước khi lệnh .save() hoặc .create() được thực thi
+ * PRE-SAVE HOOK (ĐÃ SỬA)
+ * Với Mongoose mới + Async Function, KHÔNG DÙNG tham số 'next' nữa.
  */
-userSchema.pre("save", async function (next) {
-    // Nếu password không bị thay đổi (chỉ sửa username, role...), thì bỏ qua
-    if (!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+    // 1. Nếu password không bị thay đổi (chỉ sửa username, role...), thì thoát luôn
+    if (!this.isModified("password")) return;
 
-    try {
-        // Tạo salt và hash password
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
+    // 2. Hash password trực tiếp
+    // Nếu có lỗi (ví dụ bcrypt lỗi), nó sẽ tự động ném ra ngoài (Throw Error)
+    // Controller dùng asyncHandler sẽ tự bắt được lỗi này.
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 const User = mongoose.model("User", userSchema);
