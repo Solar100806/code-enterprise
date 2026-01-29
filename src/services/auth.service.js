@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import ApiError from "../utils/api-error.util.js"; // Nhớ import class này
 
 // Login Service
 export const login = async ({ email, password }) => {
@@ -8,12 +9,13 @@ export const login = async ({ email, password }) => {
     const user = await User.findOne({ email });
 
     // 2. Check Password
-    // Mẹo: Dùng user && ... để nếu user null thì vế sau không chạy -> đỡ lỗi crash
-    const isMatch = user && (await bcrypt.compare(password, user.password));
+    // Lưu ý: Nếu user không tồn tại, bcrypt.compare vẫn chạy tốt với null nhưng trả về false
+    // Nhưng để an toàn, check user tồn tại trước
+    const isPasswordMatch = user && (await bcrypt.compare(password, user.password));
 
-    if (!isMatch) {
-        // Lưu ý: Ném Error chung chung để Middleware bắt, hoặc dùng CustomError để có status code
-        throw new Error("Email hoặc mật khẩu không đúng");
+    if (!user || !isPasswordMatch) {
+        // SỬA: Dùng 401 và thông báo chung chung để chống hack
+        throw new ApiError(401, "Email hoặc mật khẩu không chính xác");
     }
 
     // 3. Tạo Token
@@ -21,12 +23,10 @@ export const login = async ({ email, password }) => {
         { userId: user._id, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
-
-
-
     );
 
-    // 4. Xóa password khi trả về client
+    // 4. Return
+    // Mẹo: Dùng spread operator (...) để bỏ password nhanh gọn
     const userResponse = user.toObject();
     delete userResponse.password;
 
@@ -37,20 +37,22 @@ export const login = async ({ email, password }) => {
 export const register = async ({ username, email, password }) => {
     // 1. Check tồn tại
     const userExists = await User.findOne({ email });
+
     if (userExists) {
-        throw new Error("Email đã tồn tại");
+        // SỬA: Dùng 409 (Conflict) và báo Email đã tồn tại
+        throw new ApiError(409, "Email này đã được sử dụng!");
     }
 
     // 2. Tạo user 
-    // QUAN TRỌNG: Model phải có Pre-save hook để hash password nhé!
+    // LƯU Ý QUAN TRỌNG: Bạn đang tin tưởng vào User Model có Pre-save hook để hash pass.
+    // Nếu Model chưa có đoạn đó, password sẽ bị lộ. Kiểm tra kỹ model nhé!
     const newUser = await User.create({
         username,
         email,
-        password, // Raw password, Model tự hash
-        role: "user" // Hardcode role user -> An toàn
+        password,
+        role: "user"
     });
 
-    // 3. Return data sạch
     const userResponse = newUser.toObject();
     delete userResponse.password;
 
