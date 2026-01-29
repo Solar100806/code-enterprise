@@ -8,9 +8,11 @@ export const getAllPosts = asyncHandler(async (req, res) => {
 
 export const getPostByid = asyncHandler(async (req, res) => {
     const post = await PostService.findById(req.params.id);
-    if (!post)
-        return res.status(404).json({ message: "Không tìm thấy bài viết!" });
-    return res.status(200).json(post);
+    if (!post) {
+        res.status(404).json({ message: "Không tìm thấy bài viết!" });
+        return;
+    }
+    res.status(200).json(post);
 });
 
 export const createPost = asyncHandler(async (req, res) => {
@@ -20,9 +22,11 @@ export const createPost = asyncHandler(async (req, res) => {
 
 export const updatePost = asyncHandler(async (req, res) => {
     const post = await PostService.update(req.params.id, req.body);
-    if (!post)
-        return res.status(404).json({ message: "Không tìm thấy bài viết!" });
-    return res.status(200).json({ message: "Sửa bài viết thành công", data: post });
+    if (!post) {
+        res.status(404).json({ message: "Không tìm thấy bài viết!" });
+        return;
+    }
+    res.status(200).json({ message: "Sửa bài viết thành công", data: post });
 });
 
 export const deletePost = asyncHandler(async (req, res) => {

@@ -1,4 +1,4 @@
-import mongoose, { now } from "mongoose";
+import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
     title: {
@@ -14,11 +14,6 @@ const postSchema = new mongoose.Schema({
     author: {
         type: String,
         required: true
-    },
-
-    createdAt: {
-        type: Date,
-        default: now
     }
 }, {
     timestamps: true,
