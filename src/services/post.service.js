@@ -1,45 +1,42 @@
 import Post from "../models/post.model.js";
+import ApiError from "../utils/api-error.util.js";
 
 export const findAll = async ({ _limit, _page, _sort, _order }) => {
-    // 1. Chuẩn hóa Input
     const page = Math.max(1, parseInt(_page, 10) || 1);
     const limit = Math.max(1, parseInt(_limit, 10) || 10);
     const skip = (page - 1) * limit;
 
-    // 2. Cấu hình Filter & Whitelist Sort
-    const filter = {}; // Sau này có thể thêm: { title: { $regex: ... } }
-
-    // Chỉ cho phép sort theo các trường an toàn
+    const filter = {};
     const allowedSortFields = ['createdAt', 'updatedAt', 'title', 'views'];
     const sortBy = allowedSortFields.includes(_sort) ? _sort : 'createdAt';
     const sortOrder = _order === 'asc' ? 1 : -1;
 
-    // 3. Thực thi song song (Parallel Execution)
     const [posts, totalItems] = await Promise.all([
         Post.find(filter)
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit)
-            .lean() // <--- TỐI ƯU HIỆU NĂNG: Trả về JSON thuần thay vì Mongoose Docs
+            .lean()
             .exec(),
-
-        Post.countDocuments(filter) // An toàn hơn estimatedDocumentCount nếu có soft-delete
+        Post.countDocuments(filter)
     ]);
-
-    // 4. Trả về kết quả
     return {
         data: posts,
         pagination: {
             page,
             limit,
             totalItems,
-            totalPage: Math.ceil(totalItems / limit) || 1 // Tránh NaN nếu totalItems = 0
+            totalPage: Math.ceil(totalItems / limit) || 1
         },
     };
 };
 
 export const findById = async (id) => {
-    return Post.findById(id);
+    const post = await Post.findById(id);
+    if (!post) {
+        throw new ApiError(404, "Không tìm thấy bài viết!");
+    }
+    return post;
 };
 
 export const create = async (payload) => {
@@ -47,9 +44,17 @@ export const create = async (payload) => {
 };
 
 export const update = async (id, payload) => {
-    return Post.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+    const post = await Post.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+    if (!post) {
+        throw new ApiError(404, "Không tìm thấy bài viết!");
+    }
+    return post;
 };
 
 export const remove = async (id) => {
-    return Post.findByIdAndDelete(id);
+    const post = await Post.findByIdAndDelete(id);
+    if (!post) {
+        throw new ApiError(404, "Không tìm thấy bài viết!");
+    }
+    return post;
 };

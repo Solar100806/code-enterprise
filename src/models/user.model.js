@@ -37,19 +37,9 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
     versionKey: false
 });
-//haha
 
-/**
- * PRE-SAVE HOOK (ĐÃ SỬA)
- * Với Mongoose mới + Async Function, KHÔNG DÙNG tham số 'next' nữa.
- */
 userSchema.pre("save", async function () {
-    // 1. Nếu password không bị thay đổi (chỉ sửa username, role...), thì thoát luôn
     if (!this.isModified("password")) return;
-
-    // 2. Hash password trực tiếp
-    // Nếu có lỗi (ví dụ bcrypt lỗi), nó sẽ tự động ném ra ngoài (Throw Error)
-    // Controller dùng asyncHandler sẽ tự bắt được lỗi này.
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
