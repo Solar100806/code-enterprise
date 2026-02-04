@@ -5,21 +5,21 @@ import * as AuthService from "../services/auth.service.js";
 export const signup = asyncHandler(async (req, res) => {
     const newUser = await AuthService.register(req.body);
 
-    res.status(201).json({
+    // Vẫn giữ status 201, nhưng dùng return để gửi data
+    res.status(201);
+    return {
         message: "Đăng ký thành công!",
         data: newUser
-    });
+    };
 });
 
 // Đăng nhập
 export const signin = asyncHandler(async (req, res) => {
     const { accessToken, user } = await AuthService.login(req.body);
 
-    res.status(200).json({
+    // Login thành công là 200, chỉ cần return là đủ
+    return {
         message: "Đăng nhập thành công",
-        data: {
-            accessToken,
-            user
-        }
-    });
+        data: { accessToken, user }
+    };
 });

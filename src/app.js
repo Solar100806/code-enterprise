@@ -17,10 +17,15 @@ app.use(errorMiddleware);
 const PORT = process.env.PORT || 3000;
 
 const bootstrap = async () => {
-    await connectDB();
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+    try {
+        await connectDB();
+        app.listen(PORT, () => {
+            console.log(`🚀 Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error("❌ Failed to start server:", error);
+        process.exit(1); // Dừng chương trình nếu lỗi nghiêm trọng
+    }
 };
 
 bootstrap();
