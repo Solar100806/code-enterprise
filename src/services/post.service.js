@@ -2,8 +2,6 @@ import Post from "../models/post.model.js";
 import ApiError from "../utils/api-error.util.js";
 
 export const findAll = async (query) => {
-    // 1. Destructuring & Gán giá trị mặc định ngay từ đầu
-    // Lấy thêm _q (query) để làm tính năng tìm kiếm
     const {
         _limit = 10,
         _page = 1,
@@ -12,42 +10,38 @@ export const findAll = async (query) => {
         _q = ''
     } = query;
 
-    // 2. Xử lý phân trang an toàn
     const limit = Math.max(1, parseInt(_limit) || 10);
     const page = Math.max(1, parseInt(_page) || 1);
     const skip = (page - 1) * limit;
 
-    // 3. Xử lý Filter (Bộ lọc & Tìm kiếm)
     const filter = {};
-
-    // Nếu có từ khóa tìm kiếm (_q), ta sẽ tìm trong Title hoặc Author
     if (_q) {
         filter.$or = [
-            { title: { $regex: _q, $options: 'i' } },  // 'i' là không phân biệt hoa thường
+            { title: { $regex: _q, $options: 'i' } },
             { author: { $regex: _q, $options: 'i' } }
         ];
     }
 
-    // 4. Xử lý Sắp xếp (Sorting) - QUAN TRỌNG
-    // Chỉ cho phép sort theo các trường CÓ THẬT trong Model của bạn
-    // (Mình thêm 'price' vào đây phòng trường hợp bạn đã update model)
+    // 1. Kiểm tra xem trường sort có hợp lệ không
+    // Cần đảm bảo model đã có trường 'price'
     const allowedSortFields = ['createdAt', 'updatedAt', 'title', 'author', 'price'];
-
     const sortBy = allowedSortFields.includes(_sort) ? _sort : 'createdAt';
-    const sortOrder = _order === 'asc' ? 1 : -1; // Mặc định là giảm dần (-1) cho bài mới nhất/giá cao nhất
 
-    // 5. Query Database (Chạy song song)
+    // 2. Logic sort chuẩn:
+    // desc (-1): Lớn -> Bé (Ví dụ: Giá cao nhất lên đầu)
+    // asc  (1): Bé -> Lớn (Ví dụ: Giá rẻ nhất lên đầu)
+    const sortOrder = _order === 'asc' ? 1 : -1;
+
     const [posts, totalItems] = await Promise.all([
         Post.find(filter)
-            .sort({ [sortBy]: sortOrder })
+            .sort({ [sortBy]: sortOrder }) // Sort động
             .skip(skip)
             .limit(limit)
-            .lean() // Tăng tốc độ đọc
+            .lean()
             .exec(),
-        Post.countDocuments(filter) // Đếm dựa trên kết quả lọc được (search)
+        Post.countDocuments(filter)
     ]);
 
-    // 6. Trả về kết quả chuẩn
     return {
         data: posts,
         pagination: {
