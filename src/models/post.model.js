@@ -3,12 +3,16 @@ import mongoose from "mongoose";
 const postSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+        minLength: 6,
+        maxLength: 255
     },
 
     content: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     author: {
@@ -18,7 +22,8 @@ const postSchema = new mongoose.Schema({
 
     price: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0
     }
 }, {
     timestamps: true,

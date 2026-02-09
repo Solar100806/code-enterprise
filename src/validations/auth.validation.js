@@ -17,6 +17,7 @@ export const registerValidation = Joi.object({
     email: Joi.string()
         .required()
         .email({ tlds: { allow: false } }) // Cho phép mọi đuôi email (tránh lỗi 1 số đuôi lạ)
+        .lowercase()
         .messages({
             "string.email": "Email không hợp lệ",
             "string.empty": "Email không được để trống",
